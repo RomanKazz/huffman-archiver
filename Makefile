@@ -9,3 +9,6 @@ huff: $(OBJ)
 
 clean:
 	rm -f src/*.o huff
+
+test:
+	./tests/test.sh

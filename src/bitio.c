@@ -31,7 +31,7 @@ void flush_bits(BitWriter* bw) {
 
 int read_bit(BitReader* br) {
     if (br->bit_count == 0) {
-        fread(&br->buffer, 1, 1, br->file);
+        if(fread(&br->buffer, 1, 1, br->file) != 1) return -1;
         br->bit_count = 8;
     }
 

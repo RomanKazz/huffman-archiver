@@ -1,8 +1,9 @@
 *.o
 *.out
-*.bin
-*.txt
 huff
 .DS_Store
 compile_commands.json
-./cache
+.cache/
+tmp.*
+archive.huff
+tests/random.bin

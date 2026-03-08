@@ -52,7 +52,7 @@ void write_header(FILE* out, int freq[MAX], int original_size) {
     fwrite(freq, sizeof(int), MAX, out);
 }
 
-void read_header(FILE* in, int freq[MAX], int* original_size) {
+int read_header(FILE* in, int freq[MAX], int* original_size) {
     char magic[4];
 
     fread(magic, 1, 4, in);
@@ -60,11 +60,13 @@ void read_header(FILE* in, int freq[MAX], int* original_size) {
     if (memcmp(magic, "HUFF", 4) != 0) {
         printf("Invalid archive format\n");
         fclose(in);
-        return;
+        return 0;
     }
 
     fread(original_size, sizeof(int), 1, in);
     fread(freq, sizeof(int), MAX, in);
+
+    return 1;
 }
 
 void generateCodes(HuffmanNode* root, unsigned int code, int length,
@@ -99,8 +101,10 @@ void compress_file(const char* input, const char* output) {
 
     HuffmanNode* root = buildHuffmanTree(freq);
 
+    int original_size = get_file_size(in);
+    write_header(out, freq, original_size);
+
     if (!root) {
-        printf("Input file is empty\n");
         fclose(in);
         fclose(out);
         return;
@@ -113,10 +117,6 @@ void compress_file(const char* input, const char* output) {
 
     memset(code_table, 0, sizeof(code_table));
     build_code_table(codes, index, code_table);
-
-    int original_size = get_file_size(in);
-
-    write_header(out, freq, original_size);
 
     BitWriter bw;
     bw.file = out;
@@ -149,7 +149,12 @@ void decompress_file(const char* input, const char* output) {
     int freq[256];
     int original_size;
 
-    read_header(in, freq, &original_size);
+    if(read_header(in, freq, &original_size) == 0) {
+        printf("Failed to decompress file\n");
+        fclose(in);
+        fclose(out);
+        return;
+    }
 
     HuffmanNode* root = buildHuffmanTree(freq);
 

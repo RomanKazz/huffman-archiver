@@ -60,7 +60,6 @@ void enqueue(PriorityQueue* pq, HuffmanNode* node) {
 
 HuffmanNode* dequeue(PriorityQueue* pq) {
     if (!pq->size) {
-        printf("Priority queue is empty.\n");
         return NULL;
     }
 

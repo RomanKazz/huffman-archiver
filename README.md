@@ -22,6 +22,14 @@ $ ./huff c input.txt archive.huff
 $ ./huff d archive.huff output.txt
 ```
 
+### Пример использования
+
+```bash
+$ make
+$ ./huff c tests/text.txt archive.huff
+$ ./huff d archive.huff result.txt
+```
+
 ## Алгоритм
 
 Программа использует **кодирование Хаффмана** для сжатия файлов без потерь.
