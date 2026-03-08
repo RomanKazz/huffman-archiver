@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -O2
+CFLAGS = -Wall -Wextra -O2 -Iinclude
 
-SRC = main.c huffman_tree.c huffman_codec.c bitio.c
+SRC = src/main.c src/huffman_tree.c src/huffman_codec.c src/bitio.c
 OBJ = $(SRC:.c=.o)
 
 huff: $(OBJ)
