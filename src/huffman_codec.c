@@ -51,6 +51,7 @@ void read_header(FILE* in, int freq[MAX], int* original_size) {
 
     if (memcmp(magic, "HUFF", 4) != 0) {
         printf("Invalid archive format\n");
+        fclose(in);
         return;
     }
 
@@ -64,7 +65,14 @@ void generateCodes(HuffmanNode* root, char* code, int depth, SymbolCode* codes,
     if (!root->left && !root->right) {
         codes[*index].ch = root->ch;
         codes[*index].freq = root->freq;
-        code[depth] = '\0';
+
+        if (depth == 0) {
+            code[0] = '0';
+            code[1] = '\0';
+        } else {
+            code[depth] = '\0';
+        }
+
         strcpy(codes[*index].code, code);
 
         (*index)++;
@@ -93,6 +101,13 @@ void compress_file(const char* input, const char* output) {
     count_freq_file(in, freq);
 
     HuffmanNode* root = buildHuffmanTree(freq);
+
+    if (!root) {
+        printf("Input file is empty\n");
+        fclose(in);
+        fclose(out);
+        return;
+    }
 
     SymbolCode codes[256];
     char code[MAX_CODE_LEN];
