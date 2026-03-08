@@ -1,6 +1,7 @@
 *.o
 *.out
 *.bin
+*.txt
 huff
 .DS_Store
 compile_commands.json

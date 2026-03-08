@@ -11,11 +11,17 @@
 
 typedef struct {
     char ch;
-    char code[MAX_CODE_LEN];
+    unsigned int code;
+    int length;
     int freq;
 } SymbolCode;
 
-char code_table[256][MAX_CODE_LEN];
+typedef struct {
+    unsigned int code;
+    int length;
+} HuffCode;
+
+HuffCode code_table[256];
 
 long get_file_size(FILE* f) {
     fseek(f, 0, SEEK_END);
@@ -32,10 +38,12 @@ void count_freq_file(FILE* f, int freq[256]) {
     rewind(f);
 }
 
-void build_code_table(SymbolCode codes[], int n,
-                      char table[256][MAX_CODE_LEN]) {
-    for (int i = 0; i < n; i++)
-        strcpy(table[(unsigned char)codes[i].ch], codes[i].code);
+void build_code_table(SymbolCode codes[], int n, HuffCode table[256]) {
+    for (int i = 0; i < n; i++) {
+        unsigned char c = codes[i].ch;
+        table[c].code = codes[i].code;
+        table[c].length = codes[i].length;
+    }
 }
 
 void write_header(FILE* out, int freq[MAX], int original_size) {
@@ -59,33 +67,22 @@ void read_header(FILE* in, int freq[MAX], int* original_size) {
     fread(freq, sizeof(int), MAX, in);
 }
 
-void generateCodes(HuffmanNode* root, char* code, int depth, SymbolCode* codes,
-                   int* index) {
+void generateCodes(HuffmanNode* root, unsigned int code, int length,
+                   SymbolCode* codes, int* index) {
     if (!root) return;
+
     if (!root->left && !root->right) {
         codes[*index].ch = root->ch;
         codes[*index].freq = root->freq;
-
-        if (depth == 0) {
-            code[0] = '0';
-            code[1] = '\0';
-        } else {
-            code[depth] = '\0';
-        }
-
-        strcpy(codes[*index].code, code);
+        codes[*index].code = (length == 0 ? 0 : code);
+        codes[*index].length = (length == 0 ? 1 : length);
 
         (*index)++;
         return;
     }
-    if (root->left) {
-        code[depth] = '0';
-        generateCodes(root->left, code, depth + 1, codes, index);
-    }
-    if (root->right) {
-        code[depth] = '1';
-        generateCodes(root->right, code, depth + 1, codes, index);
-    }
+
+    generateCodes(root->left, code << 1, length + 1, codes, index);
+    generateCodes(root->right, (code << 1) | 1, length + 1, codes, index);
 }
 
 void compress_file(const char* input, const char* output) {
@@ -110,10 +107,9 @@ void compress_file(const char* input, const char* output) {
     }
 
     SymbolCode codes[256];
-    char code[MAX_CODE_LEN];
     int index = 0;
 
-    generateCodes(root, code, 0, codes, &index);
+    generateCodes(root, 0, 0, codes, &index);
 
     memset(code_table, 0, sizeof(code_table));
     build_code_table(codes, index, code_table);
@@ -130,7 +126,7 @@ void compress_file(const char* input, const char* output) {
     unsigned char byte;
 
     while (fread(&byte, 1, 1, in) == 1) {
-        write_code(&bw, code_table[byte]);
+        write_bits(&bw, code_table[byte].code, code_table[byte].length);
     }
 
     flush_bits(&bw);

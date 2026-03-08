@@ -16,7 +16,7 @@ typedef struct {
 } BitReader;
 
 void write_bit(BitWriter* bw, int bit);
-void write_code(BitWriter* bw, const char* code);
+void write_bits(BitWriter* bw, unsigned int code, int length);
 void flush_bits(BitWriter* bw);
 
 int read_bit(BitReader* br);

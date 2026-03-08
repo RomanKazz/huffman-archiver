@@ -8,4 +8,4 @@ huff: $(OBJ)
 	$(CC) $(OBJ) -o huff
 
 clean:
-	rm -f *.o huff
+	rm -f src/*.o huff

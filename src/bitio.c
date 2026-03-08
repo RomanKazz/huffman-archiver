@@ -16,6 +16,12 @@ void write_code(BitWriter* bw, const char* code) {
     for (int i = 0; code[i]; i++) write_bit(bw, code[i] == '1');
 }
 
+void write_bits(BitWriter* bw, unsigned int code, int length) {
+    for (int i = length - 1; i >= 0; i--) {
+        write_bit(bw, (code >> i) & 1);
+    }
+}
+
 void flush_bits(BitWriter* bw) {
     if (bw->bit_count > 0) {
         bw->buffer <<= (8 - bw->bit_count);
