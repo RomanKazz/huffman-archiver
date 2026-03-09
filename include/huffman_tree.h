@@ -2,7 +2,7 @@
 #define HUFFMAN_TREE_H
 
 typedef struct HuffmanNode {
-    char ch;
+    unsigned char ch;
     int freq;
     struct HuffmanNode* left;
     struct HuffmanNode* right;

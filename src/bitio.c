@@ -1,6 +1,6 @@
 #include "bitio.h"
 
-void write_bit(BitWriter* bw, int bit) {
+void inline write_bit(BitWriter* bw, int bit) {
     bw->buffer <<= 1;
     bw->buffer |= bit;
     bw->bit_count++;
@@ -29,7 +29,7 @@ void flush_bits(BitWriter* bw) {
     }
 }
 
-int read_bit(BitReader* br) {
+int inline read_bit(BitReader* br) {
     if (br->bit_count == 0) {
         if(fread(&br->buffer, 1, 1, br->file) != 1) return -1;
         br->bit_count = 8;

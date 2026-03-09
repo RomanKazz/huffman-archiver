@@ -21,7 +21,7 @@ typedef struct {
     int length;
 } HuffCode;
 
-HuffCode code_table[256];
+static HuffCode code_table[256];
 
 long get_file_size(FILE* f) {
     fseek(f, 0, SEEK_END);
@@ -55,7 +55,7 @@ void write_header(FILE* out, int freq[MAX], int original_size) {
 int read_header(FILE* in, int freq[MAX], int* original_size) {
     char magic[4];
 
-    fread(magic, 1, 4, in);
+    if (fread(magic, 1, 4, in) != 4) return 0;
 
     if (memcmp(magic, "HUFF", 4) != 0) {
         printf("Invalid archive format\n");
@@ -149,7 +149,7 @@ void decompress_file(const char* input, const char* output) {
     int freq[256];
     int original_size;
 
-    if(read_header(in, freq, &original_size) == 0) {
+    if (read_header(in, freq, &original_size) == 0) {
         printf("Failed to decompress file\n");
         fclose(in);
         fclose(out);

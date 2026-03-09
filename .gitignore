@@ -7,3 +7,7 @@ compile_commands.json
 tmp.*
 archive.huff
 tests/random.bin
+tests/tmp/*
+TODO.md
+build/
+tests/benchmark.sh

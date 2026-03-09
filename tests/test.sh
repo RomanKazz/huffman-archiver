@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-ARCHIVER=./huff
+ARCHIVER=build/huff
 TMP_ARCHIVE=tmp.huff
 TMP_OUTPUT=tmp.out
 
@@ -33,7 +33,7 @@ run_test() {
 echo "Running Huffman tests..."
 echo
 
-for file in tests/*.txt tests/*.bin; do
+for file in tests/data/*.txt tests/data/*.bin; do
     run_test "$file"
 done
 
