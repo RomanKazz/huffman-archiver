@@ -11,3 +11,9 @@ tests/tmp/*
 TODO.md
 build/
 tests/benchmark.sh
+experiments/data/
+experiments/plots/
+experiments/benchmark/result.csv
+.venv/
+experiments/plots/*
+!experiments/plots/.gitkeep
