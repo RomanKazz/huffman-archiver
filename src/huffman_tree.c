@@ -10,28 +10,29 @@ typedef struct {
     HuffmanNode* items[MAX];
 } PriorityQueue;
 
-HuffmanNode* createNode(char ch, int freq) {
+HuffmanNode* create_node(char ch, int freq) {
     HuffmanNode* node = (HuffmanNode*)malloc(sizeof(HuffmanNode));
+    if (!node) return NULL;
     node->ch = ch;
     node->freq = freq;
     node->left = node->right = NULL;
     return node;
 }
 
-void swapNodes(HuffmanNode** a, HuffmanNode** b) {
+void swap_nodes(HuffmanNode** a, HuffmanNode** b) {
     HuffmanNode* temp = *a;
     *a = *b;
     *b = temp;
 }
 
-void heapifyUp(PriorityQueue* pq, int index) {
+void heapify_up(PriorityQueue* pq, int index) {
     if (index && pq->items[(index - 1) / 2]->freq > pq->items[index]->freq) {
-        swapNodes(&pq->items[(index - 1) / 2], &pq->items[index]);
-        heapifyUp(pq, (index - 1) / 2);
+        swap_nodes(&pq->items[(index - 1) / 2], &pq->items[index]);
+        heapify_up(pq, (index - 1) / 2);
     }
 }
 
-void heapifyDown(PriorityQueue* pq, int index) {
+void heapify_down(PriorityQueue* pq, int index) {
     int smallest = index;
     int left = 2 * index + 1;
     int right = 2 * index + 2;
@@ -43,8 +44,8 @@ void heapifyDown(PriorityQueue* pq, int index) {
         smallest = right;
 
     if (smallest != index) {
-        swapNodes(&pq->items[index], &pq->items[smallest]);
-        heapifyDown(pq, smallest);
+        swap_nodes(&pq->items[index], &pq->items[smallest]);
+        heapify_down(pq, smallest);
     }
 }
 
@@ -55,7 +56,7 @@ void enqueue(PriorityQueue* pq, HuffmanNode* node) {
     }
 
     pq->items[pq->size++] = node;
-    heapifyUp(pq, pq->size - 1);
+    heapify_up(pq, pq->size - 1);
 }
 
 HuffmanNode* dequeue(PriorityQueue* pq) {
@@ -65,22 +66,29 @@ HuffmanNode* dequeue(PriorityQueue* pq) {
 
     HuffmanNode* node = pq->items[0];
     pq->items[0] = pq->items[--pq->size];
-    heapifyDown(pq, 0);
+    heapify_down(pq, 0);
     return node;
 }
 
-HuffmanNode* buildHuffmanTree(int freq[]) {
+HuffmanNode* build_huffman_tree(int freq[]) {
     PriorityQueue pq;
     pq.size = 0;
 
-    for (int i = 0; i < 256; i++)
-        if (freq[i] > 0) enqueue(&pq, createNode((char)i, freq[i]));
+    for (int i = 0; i < 256; i++) {
+        if (freq[i] > 0) {
+            HuffmanNode* node = create_node((char)i, freq[i]);
+            if (!node) return NULL;
+
+            enqueue(&pq, node);
+        }
+    }
 
     while (pq.size > 1) {
         HuffmanNode* left = dequeue(&pq);
         HuffmanNode* right = dequeue(&pq);
 
-        HuffmanNode* internal = createNode('\0', left->freq + right->freq);
+        HuffmanNode* internal = create_node('\0', left->freq + right->freq);
+        if (!internal) return NULL;
         internal->left = left;
         internal->right = right;
 
@@ -90,9 +98,9 @@ HuffmanNode* buildHuffmanTree(int freq[]) {
     return dequeue(&pq);
 }
 
-void freeHuffmanTree(HuffmanNode* root) {
+void free_huffman_tree(HuffmanNode* root) {
     if (!root) return;
-    freeHuffmanTree(root->left);
-    freeHuffmanTree(root->right);
+    free_huffman_tree(root->left);
+    free_huffman_tree(root->right);
     free(root);
 }

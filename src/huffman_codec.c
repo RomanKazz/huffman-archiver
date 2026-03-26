@@ -1,5 +1,6 @@
 #include "huffman_codec.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -21,11 +22,9 @@ typedef struct {
     int length;
 } HuffCode;
 
-static HuffCode code_table[256];
-
-long get_file_size(FILE* f) {
+uint64_t get_file_size(FILE* f) {
     fseek(f, 0, SEEK_END);
-    long size = ftell(f);
+    uint64_t size = ftell(f);
     rewind(f);
     return size;
 }
@@ -46,31 +45,31 @@ void build_code_table(SymbolCode codes[], int n, HuffCode table[256]) {
     }
 }
 
-void write_header(FILE* out, int freq[MAX], int original_size) {
+void write_header(FILE* out, int freq[MAX], uint64_t original_size) {
     fwrite("HUFF", sizeof(char), 4, out);
-    fwrite(&original_size, sizeof(int), 1, out);
+    fwrite(&original_size, sizeof(uint64_t), 1, out);
     fwrite(freq, sizeof(int), MAX, out);
 }
 
-int read_header(FILE* in, int freq[MAX], int* original_size) {
-    char magic[4];
+int read_header(FILE* in, int freq[MAX], uint64_t* original_size) {
+    char magic[4] = {0};
 
     if (fread(magic, 1, 4, in) != 4) return 0;
 
     if (memcmp(magic, "HUFF", 4) != 0) {
         printf("Invalid archive format\n");
-        fclose(in);
         return 0;
     }
 
-    fread(original_size, sizeof(int), 1, in);
-    fread(freq, sizeof(int), MAX, in);
+    if (fread(original_size, sizeof(uint64_t), 1, in) != 1) return 0;
+
+    if (fread(freq, sizeof(int), MAX, in) != MAX) return 0;
 
     return 1;
 }
 
-void generateCodes(HuffmanNode* root, unsigned int code, int length,
-                   SymbolCode* codes, int* index) {
+void generate_codes(HuffmanNode* root, unsigned int code, int length,
+                    SymbolCode* codes, int* index) {
     if (!root) return;
 
     if (!root->left && !root->right) {
@@ -83,58 +82,64 @@ void generateCodes(HuffmanNode* root, unsigned int code, int length,
         return;
     }
 
-    generateCodes(root->left, code << 1, length + 1, codes, index);
-    generateCodes(root->right, (code << 1) | 1, length + 1, codes, index);
+    generate_codes(root->left, code << 1, length + 1, codes, index);
+    generate_codes(root->right, (code << 1) | 1, length + 1, codes, index);
 }
 
 void compress_file(const char* input, const char* output) {
+    HuffCode code_table[256] = {0};
+
     FILE* in = fopen(input, "rb");
     FILE* out = fopen(output, "wb");
 
     if (!in || !out) {
         perror("file");
+        if (in) fclose(in);
+        if (out) fclose(out);
         return;
     }
 
     int freq[256] = {0};
     count_freq_file(in, freq);
 
-    HuffmanNode* root = buildHuffmanTree(freq);
-
-    int original_size = get_file_size(in);
-    write_header(out, freq, original_size);
-
+    HuffmanNode* root = build_huffman_tree(freq);
     if (!root) {
         fclose(in);
         fclose(out);
         return;
     }
 
+    uint64_t original_size = get_file_size(in);
+    write_header(out, freq, original_size);
+
     SymbolCode codes[256];
     int index = 0;
 
-    generateCodes(root, 0, 0, codes, &index);
+    generate_codes(root, 0, 0, codes, &index);
 
     memset(code_table, 0, sizeof(code_table));
     build_code_table(codes, index, code_table);
 
-    BitWriter bw;
-    bw.file = out;
-    bw.bit_count = 0;
-    bw.buffer = 0;
+    BitWriter* bw = bw_create(out);
+    if (!bw) {
+        fclose(in);
+        fclose(out);
+        return;
+    }
 
     unsigned char byte;
 
     while (fread(&byte, 1, 1, in) == 1) {
-        write_bits(&bw, code_table[byte].code, code_table[byte].length);
+        bw_write_bits(bw, code_table[byte].code, code_table[byte].length);
     }
 
-    flush_bits(&bw);
+    bw_flush(bw);
 
     fclose(in);
     fclose(out);
 
-    freeHuffmanTree(root);
+    free_huffman_tree(root);
+    bw_free(bw);
 }
 
 void decompress_file(const char* input, const char* output) {
@@ -143,11 +148,13 @@ void decompress_file(const char* input, const char* output) {
 
     if (!in || !out) {
         perror("file");
+        if (in) fclose(in);
+        if (out) fclose(out);
         return;
     }
 
     int freq[256];
-    int original_size;
+    uint64_t original_size;
 
     if (read_header(in, freq, &original_size) == 0) {
         printf("Failed to decompress file\n");
@@ -156,18 +163,34 @@ void decompress_file(const char* input, const char* output) {
         return;
     }
 
-    HuffmanNode* root = buildHuffmanTree(freq);
+    HuffmanNode* root = build_huffman_tree(freq);
+    if (!root) {
+        fclose(in);
+        fclose(out);
+        return;
+    }
 
-    BitReader br;
-    br.file = in;
-    br.bit_count = 0;
-    br.buffer = 0;
+    BitReader* br = br_create(in);
+    if (!br) {
+        fclose(in);
+        fclose(out);
+        free_huffman_tree(root);
+        return;
+    }
 
-    for (int i = 0; i < original_size; i++) {
+    for (uint64_t i = 0; i < original_size; i++) {
         HuffmanNode* node = root;
 
         while (node->left || node->right) {
-            int bit = read_bit(&br);
+            int bit = br_read_bit(br);
+            if (bit == -1) {
+                // corrupted archive
+                fclose(in);
+                fclose(out);
+                free_huffman_tree(root);
+                br_free(br);
+                return;
+            }
 
             if (bit)
                 node = node->right;
@@ -180,5 +203,6 @@ void decompress_file(const char* input, const char* output) {
     fclose(in);
     fclose(out);
 
-    freeHuffmanTree(root);
+    free_huffman_tree(root);
+    br_free(br);
 }
