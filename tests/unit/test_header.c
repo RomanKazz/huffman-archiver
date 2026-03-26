@@ -20,7 +20,7 @@ TEST(header_rw)
     f = fopen(file, "rb");
 
     int freq2[256];
-    int size;
+    uint64_t size;
 
     EXPECT_TRUE(read_header(f, freq2, &size));
 
