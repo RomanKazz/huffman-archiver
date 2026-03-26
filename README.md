@@ -2,28 +2,50 @@
 
 Консольный архиватор файлов на основе алгоритма кодирования Хаффмана.
 
+## Зависимости
+
+Для сборки требуется:
+
+- CMake >= 3.16
+- C компилятор (gcc / clang)
+- make (или ninja)
+
+## Поддерживаемые платформы
+
+Проект разрабатывался и тестировался на:
+
+- macOS (Apple Clang)
+- Linux (gcc / clang)
+
+Должен собираться на любой POSIX-совместимой системе при наличии CMake и компилятора C.
+
+Windows напрямую не тестировался, но может работать через WSL или MinGW.
+
 ## Сборка
 
 ```bash
-make
+mkdir build
+cd build
+cmake ..
+cmake --build .
 ```
 
 ## Использование
 
 ### Сжатие файла
 ```bash
-./build/huff c input.txt archive.huff
+./huff c input.txt archive.huff
 ```
 
 ### Распаковка файла
 ```bash
-./build/huff d archive.huff output.txt
+./huff d archive.huff output.txt
 ```
 
 ## Пример
 
 ```bash
-make
+cmake --build build
 ./build/huff c tests/data/text.txt archive.huff
 ./build/huff d archive.huff result.txt
 ```
@@ -45,7 +67,7 @@ make
 Файл архива имеет следующую структуру:
 ```
 magic      (4 bytes)  "HUFF"
-size       (4 bytes)  размер исходного файла
+size       (8 bytes)  размер исходного файла
 freq[256] (1024 B)   таблица частот байтов
 data       (...)      сжатый битовый поток
 ```
@@ -56,17 +78,21 @@ data       (...)      сжатый битовый поток
 
 ### Интеграционные тесты
 ```bash
-make test
+cmake --build build
+bash tests/test.sh
 ```
 
 ### Модульные тесты
 ```bash
-make test_unit
+cmake --build build
+ctest
 ```
 
 ### Все тесты
 ```bash
-make check
+cmake --build build
+ctest
+bash tests/test.sh
 ```
 
 ### Эксперименты
@@ -76,9 +102,7 @@ make check
 
 ### Результаты экспериментов
 
-Результаты бенчмарков и экспериментов доступны в следующих файлах:
-
-- `experiments/benchmark/result.csv` — сырые данные бенчмарков.
+- `experiments/benchmark/result.csv` — сырые данные.
 - `experiments/plots/*.png` — графики.
 
 ## Структура проекта
@@ -91,26 +115,18 @@ src/
   bitio.c           битовый ввод/вывод
 
 include/
-  *.h               заголовочные файлы
+  *.h               публичный API
 
 tests/
   data/             тестовые файлы
   unit/             модульные тесты
   test.sh           интеграционные тесты
+  
+experiments/
+  benchmark/        бенчмарки
+  plots/            графики         
 
 build/              артефакты сборки
-```
-
-## Компилятор и сборка
-
-Проект собирается с помощью:
-```
-gcc + Makefile
-```
-
-Флаги компиляции:
-```
--Wall -Wextra -O2 -fsanitize=address
 ```
 
 ## Лицензия
