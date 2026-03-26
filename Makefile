@@ -33,9 +33,6 @@ $(BUILD)/%.o: $(SRC_DIR)/%.c
 test: $(TARGET)
 	./tests/test.sh
 
-bm:
-	./tests/benchmark.sh
-
 test_unit: $(TEST_BIN)
 	mkdir -p tests/tmp
 	for t in $(TEST_BIN); do ./$$t; done
