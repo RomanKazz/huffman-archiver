@@ -3,22 +3,50 @@
 
 #include <stdio.h>
 
-typedef struct {
-    FILE* file;
-    unsigned char buffer;
-    int bit_count;
-} BitWriter;
+/**
+ * Непрозрачные структуры
+ */
+typedef struct BitWriter BitWriter;
+typedef struct BitReader BitReader;
 
-typedef struct {
-    FILE* file;
-    unsigned char buffer;
-    int bit_count;
-} BitReader;
+/**
+ * Создаёт writer
+ */
+BitWriter* bw_create(FILE* file);
 
-void write_bit(BitWriter* bw, int bit);
-void write_bits(BitWriter* bw, unsigned int code, int length);
-void flush_bits(BitWriter* bw);
+/**
+ * Записывает один бит
+ */
+void bw_write_bit(BitWriter* bw, int bit);
 
-int read_bit(BitReader* br);
+/**
+ * Записывает несколько бит
+ */
+void bw_write_bits(BitWriter* bw, unsigned int code, int length);
 
-#endif  // BITIO_H
+/**
+ * Сбрасывает буфер
+ */
+void bw_flush(BitWriter* bw);
+
+/**
+ * Освобождает writer
+ */
+void bw_free(BitWriter* bw);
+
+/**
+ * Создаёт reader
+ */
+BitReader* br_create(FILE* file);
+
+/**
+ * Читает один бит
+ */
+int br_read_bit(BitReader* br);
+
+/**
+ * Освобождает reader
+ */
+void br_free(BitReader* br);
+
+#endif
