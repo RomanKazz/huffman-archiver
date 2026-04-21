@@ -3,9 +3,11 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 echo "Building project..."
-make
+cmake -S "$ROOT_DIR" -B "$ROOT_DIR/build"
+cmake --build "$ROOT_DIR/build"
 
 echo "Generating data..."
 "$SCRIPT_DIR/generate_data.sh"

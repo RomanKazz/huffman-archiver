@@ -1,134 +1,136 @@
 # Huffman Archiver
 
-Консольный архиватор файлов на основе алгоритма кодирования Хаффмана.
+[![CI](https://github.com/RomanKazz/huffman-archiver/actions/workflows/ci.yml/badge.svg)](https://github.com/RomanKazz/huffman-archiver/actions/workflows/ci.yml)
+
+Консольный архиватор файлов на основе алгоритма Хаффмана.
+
+## Что умеет
+
+- Сжимает и распаковывает текстовые и бинарные файлы.
+- Работает с пустыми файлами и файлами больше 4 ГБ.
+- Хранит в архиве таблицу частот и восстанавливает дерево при распаковке.
+- Содержит модульные, интеграционные и стресс-тесты.
 
 ## Зависимости
 
-Для сборки требуется:
+Для сборки и запуска нужны:
 
 - CMake >= 3.16
-- C компилятор (gcc / clang)
-- make (или ninja)
+- C-компилятор с поддержкой C11 (`gcc` или `clang`)
+- `make` или `ninja`
+- `bash`
 
-## Поддерживаемые платформы
+Для экспериментов дополнительно нужны:
 
-Проект разрабатывался и тестировался на:
+- `python3`
+- `bc`
 
-- macOS (Apple Clang)
-- Linux (gcc / clang)
-
-Должен собираться на любой POSIX-совместимой системе при наличии CMake и компилятора C.
-
-Windows напрямую не тестировался, но может работать через WSL или MinGW.
+Проект разрабатывался и тестировался на `macOS` и `Linux`.
 
 ## Сборка
 
 ```bash
-mkdir build
-cd build
-cmake ..
-cmake --build .
+cmake -S . -B build
+cmake --build build
+```
+
+Санитайзеры включены по умолчанию. При необходимости их можно отключить:
+
+```bash
+cmake -S . -B build -DENABLE_SANITIZERS=OFF
+cmake --build build
 ```
 
 ## Использование
 
-### Сжатие файла
+Сжатие:
+
 ```bash
-./huff c input.txt archive.huff
+./build/huff c input.txt archive.huff
 ```
 
-### Распаковка файла
+Распаковка:
+
 ```bash
-./huff d archive.huff output.txt
+./build/huff d archive.huff output.txt
 ```
 
-## Пример
+Пример:
 
 ```bash
+cmake -S . -B build
 cmake --build build
 ./build/huff c tests/data/text.txt archive.huff
 ./build/huff d archive.huff result.txt
+cmp -s tests/data/text.txt result.txt
 ```
-
-## Алгоритм
-
-Программа использует кодирование Хаффмана — алгоритм сжатия без потерь.
-
-Основные этапы:
-1. Подсчёт частоты каждого байта во входном файле
-2. Построение дерева Хаффмана
-3. Генерация префиксных кодов
-4. Запись сжатого битового потока
-
-При распаковке дерево восстанавливается из сохранённой таблицы частот.
 
 ## Формат архива
 
-Файл архива имеет следующую структуру:
-```
-magic      (4 bytes)  "HUFF"
-size       (8 bytes)  размер исходного файла
-freq[256] (1024 B)   таблица частот байтов
-data       (...)      сжатый битовый поток
+Архив имеет следующий формат:
+
+```text
+magic      (4 bytes)     "HUFF"
+size       (8 bytes)     размер исходного файла, little-endian uint64_t
+freq[256]  (2048 bytes)  таблица частот, little-endian uint64_t
+data       (...)         сжатый битовый поток
 ```
 
 Таблица частот используется для восстановления дерева Хаффмана при распаковке.
 
 ## Тесты
 
-### Интеграционные тесты
+Модульные тесты:
+
 ```bash
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+Интеграционные тесты:
+
+```bash
+cmake -S . -B build
 cmake --build build
 bash tests/test.sh
 ```
 
-### Модульные тесты
-```bash
-cmake --build build
-ctest
-```
+Все проверки:
 
-### Все тесты
 ```bash
+cmake -S . -B build
 cmake --build build
-ctest
+ctest --test-dir build --output-on-failure
 bash tests/test.sh
 ```
 
-### Эксперименты
+## Эксперименты
+
 ```bash
 ./experiments/run_all.sh
 ```
 
-### Результаты экспериментов
+Результаты:
 
-- `experiments/benchmark/result.csv` — сырые данные.
+- `experiments/benchmark/result.csv` — сырые замеры.
 - `experiments/plots/*.png` — графики.
 
 ## Структура проекта
 
+```text
+src/         исходный код архиватора
+include/     публичные заголовочные файлы
+tests/       модульные и интеграционные тесты
+experiments/ скрипты для замеров и анализа
 ```
-src/
-  main.c            CLI интерфейс
-  huffman_tree.c    дерево Хаффмана
-  huffman_codec.c   логика сжатия
-  bitio.c           битовый ввод/вывод
 
-include/
-  *.h               публичный API
+## Как помочь проекту
 
-tests/
-  data/             тестовые файлы
-  unit/             модульные тесты
-  test.sh           интеграционные тесты
-  
-experiments/
-  benchmark/        бенчмарки
-  plots/            графики         
-
-build/              артефакты сборки
-```
+- Сообщить о найденной ошибке или предложить улучшение.
+- Добавить тест на новый крайний случай.
+- Прислать pull request с описанием изменения и результатами проверок.
 
 ## Лицензия
 
-MIT License
+Проект распространяется под лицензией MIT.
