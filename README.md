@@ -1,6 +1,6 @@
 # Huffman Archiver
 
-[![CI](https://github.com/RomanKazz/huffman-archiver/actions/workflows/ci.yml/badge.svg)](https://github.com/RomanKazz/huffman-archiver/actions/workflows/ci.yml)
+[![CI](https://github.com/RomanKazz/huffman-archiver/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/RomanKazz/huffman-archiver/actions/workflows/ci.yml)
 
 Консольный архиватор файлов на основе алгоритма Хаффмана.
 
