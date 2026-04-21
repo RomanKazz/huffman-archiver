@@ -6,6 +6,7 @@
 TEST(write_read_bits) {
     const char* tmp = TO_TEST("tmp.bin");
 
+    EXPECT_TRUE(ensure_test_tmp_dir());
     FILE* f = fopen(tmp, "wb");
     EXPECT_TRUE(f != NULL);
 

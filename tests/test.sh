@@ -1,9 +1,11 @@
 #!/bin/bash
 set -e
 
-ARCHIVER=build/huff
-TMP_ARCHIVE=tmp.huff
-TMP_OUTPUT=tmp.out
+BUILD_DIR="${BUILD_DIR:-build-tests}"
+ARCHIVER="$BUILD_DIR/huff"
+TMP_DIR=tests/tmp
+TMP_ARCHIVE="$TMP_DIR/tmp.huff"
+TMP_OUTPUT="$TMP_DIR/tmp.out"
 
 passed=0
 failed=0
@@ -33,6 +35,11 @@ run_test() {
 echo "Running Huffman tests..."
 echo
 
+mkdir -p "$TMP_DIR"
+
+cmake -S . -B "$BUILD_DIR"
+cmake --build "$BUILD_DIR"
+
 for file in tests/data/*.txt tests/data/*.bin; do
     run_test "$file"
 done
@@ -41,7 +48,7 @@ echo "=================="
 echo "Passed: $passed"
 echo "Failed: $failed"
 
-rm -f $TMP_ARCHIVE $TMP_OUTPUT
+rm -f "$TMP_ARCHIVE" "$TMP_OUTPUT"
 
 if [ $failed -ne 0 ]; then
     exit 1

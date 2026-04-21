@@ -6,10 +6,11 @@
 TEST(corrupted_archive) {
     const char* file = TO_TEST("bad.huff");
 
+    EXPECT_TRUE(ensure_test_tmp_dir());
     FILE* f = fopen(file, "wb");
     EXPECT_TRUE(f != NULL);
 
-    for(int i = 0; i < 100; i++) fputc(i, f);
+    for (int i = 0; i < 100; i++) fputc(i, f);
 
     fclose(f);
 

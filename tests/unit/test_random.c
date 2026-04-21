@@ -10,6 +10,7 @@ TEST(random_archive) {
     const char* arc = TO_TEST("random.huff");
     const char* out = TO_TEST("random_out.bin");
 
+    EXPECT_TRUE(ensure_test_tmp_dir());
     FILE* f = fopen(in, "wb");
     EXPECT_TRUE(f != NULL);
 
@@ -30,8 +31,7 @@ TEST(random_archive) {
 }
 
 TEST(stress_random) {
-    for(int i = 0; i < 100; i++)
-        random_archive();
+    for (int i = 0; i < 100; i++) random_archive();
 }
 
 int main() {

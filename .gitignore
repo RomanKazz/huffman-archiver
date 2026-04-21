@@ -10,6 +10,7 @@ tests/random.bin
 tests/tmp/*
 TODO.md
 build/
+build-tests/
 tests/benchmark.sh
 experiments/data/
 experiments/plots/

@@ -1,9 +1,12 @@
 #ifndef TEST_H
 #define TEST_H
 
+#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "huffman_codec.h"
 
@@ -13,6 +16,18 @@
 
 static int tests_run = 0;
 static int tests_failed = 0;
+
+static inline int ensure_dir(const char* path) {
+    if (mkdir(path, 0755) == 0 || errno == EEXIST) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static inline int ensure_test_tmp_dir(void) {
+    return ensure_dir("tests") && ensure_dir("tests/tmp");
+}
 
 static inline int files_equal(const char* a, const char* b) {
     FILE* fa = fopen(a, "rb");
@@ -46,6 +61,7 @@ static inline int files_equal(const char* a, const char* b) {
         if (!(cond)) {                                             \
             printf(RED "FAIL: %s:%d\n" RESET, __FILE__, __LINE__); \
             tests_failed++;                                        \
+            return;                                                \
         }                                                          \
     } while (0)
 
@@ -54,6 +70,7 @@ static inline int files_equal(const char* a, const char* b) {
         if ((a) != (b)) {                                          \
             printf(RED "FAIL: %s:%d\n" RESET, __FILE__, __LINE__); \
             tests_failed++;                                        \
+            return;                                                \
         }                                                          \
     } while (0)
 
@@ -63,6 +80,7 @@ static inline int files_equal(const char* a, const char* b) {
         const char* arc = "tests/tmp/archive.txt"; \
         const char* out = "tests/tmp/out.txt";     \
                                                    \
+        EXPECT_TRUE(ensure_test_tmp_dir());        \
         FILE* f = fopen(in, "wb");                 \
         if (!f) {                                  \
             perror("fopen");                       \
