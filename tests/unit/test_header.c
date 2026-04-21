@@ -4,13 +4,13 @@
 #include "huffman_codec.h"
 #include "test.h"
 
-TEST(header_rw)
-{
+TEST(header_rw) {
     const char* file = TO_TEST("header.bin");
 
+    EXPECT_TRUE(ensure_test_tmp_dir());
     FILE* f = fopen(file, "wb");
 
-    int freq[256] = {0};
+    uint64_t freq[256] = {0};
     freq['a'] = 10;
     freq['b'] = 5;
 
@@ -19,7 +19,7 @@ TEST(header_rw)
 
     f = fopen(file, "rb");
 
-    int freq2[256];
+    uint64_t freq2[256] = {0};
     uint64_t size;
 
     EXPECT_TRUE(read_header(f, freq2, &size));
@@ -32,8 +32,7 @@ TEST(header_rw)
     remove(file);
 }
 
-int main()
-{
+int main() {
     RUN_TEST(header_rw);
     TEST_REPORT();
 }

@@ -9,10 +9,14 @@ int main(int argc, char* argv[]) {
         printf("%s d input output\n", argv[0]);
         return 1;
     }
-    if (argv[1][0] == 'c')
-        compress_file(argv[2], argv[3]);
-    else if (argv[1][0] == 'd')
-        decompress_file(argv[2], argv[3]);
-    else
+    if (argv[1][0] == 'c') {
+        return compress_file(argv[2], argv[3]);
+    } else if (argv[1][0] == 'd') {
+        return decompress_file(argv[2], argv[3]);
+    } else {
         printf("Unknown mode\n");
+        return 1;
+    }
+
+    return 0;
 }

@@ -1,6 +1,8 @@
 #ifndef HUFFMAN_TREE_H
 #define HUFFMAN_TREE_H
 
+#include <stdint.h>
+
 /**
  * Узел дерева Хаффмана.
  *
@@ -9,7 +11,7 @@
  */
 typedef struct HuffmanNode {
     unsigned char ch;           // символ
-    int freq;                   // частота появления
+    uint64_t freq;              // частота появления
     struct HuffmanNode* left;   // левый потомок (бит 0)
     struct HuffmanNode* right;  // правый потомок (бит 1)
 } HuffmanNode;
@@ -20,7 +22,7 @@ typedef struct HuffmanNode {
  * @param freq массив частот длины 256 (для всех возможных байтов)
  * @return указатель на корень дерева или NULL, если вход пуст
  */
-HuffmanNode* build_huffman_tree(int freq[]);
+HuffmanNode* build_huffman_tree(const uint64_t freq[256]);
 
 /**
  * Освобождает память, занятую деревом Хаффмана.

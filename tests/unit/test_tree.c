@@ -1,10 +1,10 @@
 #include <stdlib.h>
+
 #include "huffman_tree.h"
 #include "test.h"
 
-TEST(tree_basic)
-{
-    int freq[256] = {0};
+TEST(tree_basic) {
+    uint64_t freq[256] = {0};
 
     freq['a'] = 5;
     freq['b'] = 2;
@@ -17,9 +17,8 @@ TEST(tree_basic)
     free_huffman_tree(root);
 }
 
-TEST(tree_single_symbol)
-{
-    int freq[256] = {0};
+TEST(tree_single_symbol) {
+    uint64_t freq[256] = {0};
     freq['a'] = 10;
 
     HuffmanNode* root = build_huffman_tree(freq);
@@ -33,18 +32,16 @@ TEST(tree_single_symbol)
     free_huffman_tree(root);
 }
 
-TEST(tree_empty)
-{
-    int freq[256] = {0};
+TEST(tree_empty) {
+    uint64_t freq[256] = {0};
 
     HuffmanNode* root = build_huffman_tree(freq);
 
     EXPECT_TRUE(root == NULL);
 }
 
-TEST(tree_frequency_sum)
-{
-    int freq[256] = {0};
+TEST(tree_frequency_sum) {
+    uint64_t freq[256] = {0};
 
     freq['a'] = 5;
     freq['b'] = 3;
@@ -57,8 +54,7 @@ TEST(tree_frequency_sum)
     free_huffman_tree(root);
 }
 
-int main()
-{
+int main() {
     RUN_TEST(tree_basic);
     RUN_TEST(tree_single_symbol);
     RUN_TEST(tree_empty);

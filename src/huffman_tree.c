@@ -1,6 +1,5 @@
 #include "huffman_tree.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #define MAX 256
@@ -10,8 +9,8 @@ typedef struct {
     HuffmanNode* items[MAX];
 } PriorityQueue;
 
-HuffmanNode* create_node(char ch, int freq) {
-    HuffmanNode* node = (HuffmanNode*)malloc(sizeof(HuffmanNode));
+static HuffmanNode* create_node(unsigned char ch, uint64_t freq) {
+    HuffmanNode* node = malloc(sizeof(HuffmanNode));
     if (!node) return NULL;
     node->ch = ch;
     node->freq = freq;
@@ -19,20 +18,20 @@ HuffmanNode* create_node(char ch, int freq) {
     return node;
 }
 
-void swap_nodes(HuffmanNode** a, HuffmanNode** b) {
+static void swap_nodes(HuffmanNode** a, HuffmanNode** b) {
     HuffmanNode* temp = *a;
     *a = *b;
     *b = temp;
 }
 
-void heapify_up(PriorityQueue* pq, int index) {
+static void heapify_up(PriorityQueue* pq, int index) {
     if (index && pq->items[(index - 1) / 2]->freq > pq->items[index]->freq) {
         swap_nodes(&pq->items[(index - 1) / 2], &pq->items[index]);
         heapify_up(pq, (index - 1) / 2);
     }
 }
 
-void heapify_down(PriorityQueue* pq, int index) {
+static void heapify_down(PriorityQueue* pq, int index) {
     int smallest = index;
     int left = 2 * index + 1;
     int right = 2 * index + 2;
@@ -49,17 +48,12 @@ void heapify_down(PriorityQueue* pq, int index) {
     }
 }
 
-void enqueue(PriorityQueue* pq, HuffmanNode* node) {
-    if (pq->size == MAX) {
-        printf("Priority queue is full.\n");
-        return;
-    }
-
+static void enqueue(PriorityQueue* pq, HuffmanNode* node) {
     pq->items[pq->size++] = node;
     heapify_up(pq, pq->size - 1);
 }
 
-HuffmanNode* dequeue(PriorityQueue* pq) {
+static HuffmanNode* dequeue(PriorityQueue* pq) {
     if (!pq->size) {
         return NULL;
     }
@@ -70,13 +64,12 @@ HuffmanNode* dequeue(PriorityQueue* pq) {
     return node;
 }
 
-HuffmanNode* build_huffman_tree(int freq[]) {
-    PriorityQueue pq;
-    pq.size = 0;
+HuffmanNode* build_huffman_tree(const uint64_t freq[256]) {
+    PriorityQueue pq = {0};
 
     for (int i = 0; i < 256; i++) {
         if (freq[i] > 0) {
-            HuffmanNode* node = create_node((char)i, freq[i]);
+            HuffmanNode* node = create_node((unsigned char)i, freq[i]);
             if (!node) return NULL;
 
             enqueue(&pq, node);

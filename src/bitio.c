@@ -15,6 +15,8 @@ struct BitReader {
 };
 
 BitWriter* bw_create(FILE* file) {
+    if (!file) return NULL;
+
     BitWriter* bw = malloc(sizeof(BitWriter));
     if (!bw) return NULL;
 
@@ -52,6 +54,8 @@ void bw_flush(BitWriter* bw) {
 void bw_free(BitWriter* bw) { free(bw); }
 
 BitReader* br_create(FILE* file) {
+    if (!file) return NULL;
+
     BitReader* br = malloc(sizeof(BitReader));
     if (!br) return NULL;
 
