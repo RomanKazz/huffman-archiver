@@ -1,6 +1,7 @@
 # Huffman Archiver
 
 [![CI](https://github.com/RomanKazz/huffman-archiver/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/RomanKazz/huffman-archiver/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Консольный архиватор файлов на основе алгоритма Хаффмана.
 
