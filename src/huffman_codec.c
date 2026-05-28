@@ -100,10 +100,14 @@ static void generate_codes(HuffmanNode* root, HuffCode table[MAX_SYMBOLS],
     generate_codes(root->right, table, path, length + 1);
 }
 
-static void write_code(BitWriter* writer, const HuffCode* code) {
+static int write_code(BitWriter* writer, const HuffCode* code) {
     for (int i = 0; i < code->length; i++) {
-        bw_write_bit(writer, code->bits[i]);
+        if (!bw_write_bit(writer, code->bits[i])) {
+            return 0;
+        }
     }
+
+    return 1;
 }
 
 int write_header(FILE* out, const uint64_t freq[MAX_SYMBOLS],
@@ -200,14 +204,18 @@ int compress_file(const char* input, const char* output) {
     }
 
     while (fread(&byte, 1, 1, in) == 1) {
-        write_code(writer, &code_table[byte]);
+        if (!write_code(writer, &code_table[byte])) {
+            goto cleanup;
+        }
     }
 
     if (ferror(in)) {
         goto cleanup;
     }
 
-    bw_flush(writer);
+    if (!bw_flush(writer)) {
+        goto cleanup;
+    }
     status = 0;
 
 cleanup:

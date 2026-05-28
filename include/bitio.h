@@ -16,18 +16,24 @@ BitWriter* bw_create(FILE* file);
 
 /**
  * Записывает один бит
+ *
+ * @return 1 при успехе, 0 при ошибке записи
  */
-void bw_write_bit(BitWriter* bw, int bit);
+int bw_write_bit(BitWriter* bw, int bit);
 
 /**
  * Записывает несколько бит
+ *
+ * @return 1 при успехе, 0 при ошибке записи
  */
-void bw_write_bits(BitWriter* bw, unsigned int code, int length);
+int bw_write_bits(BitWriter* bw, unsigned int code, int length);
 
 /**
  * Сбрасывает буфер
+ *
+ * @return 1 при успехе, 0 при ошибке записи
  */
-void bw_flush(BitWriter* bw);
+int bw_flush(BitWriter* bw);
 
 /**
  * Освобождает writer

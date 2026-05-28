@@ -26,29 +26,41 @@ BitWriter* bw_create(FILE* file) {
     return bw;
 }
 
-void bw_write_bit(BitWriter* bw, int bit) {
+int bw_write_bit(BitWriter* bw, int bit) {
+    if (!bw) return 0;
+
     bw->buffer <<= 1;
     bw->buffer |= bit;
     bw->bit_count++;
 
     if (bw->bit_count == 8) {
-        fwrite(&bw->buffer, 1, 1, bw->file);
+        if (fwrite(&bw->buffer, 1, 1, bw->file) != 1) return 0;
         bw->buffer = 0;
         bw->bit_count = 0;
     }
+
+    return 1;
 }
 
-void bw_write_bits(BitWriter* bw, unsigned int code, int length) {
+int bw_write_bits(BitWriter* bw, unsigned int code, int length) {
     for (int i = length - 1; i >= 0; i--) {
-        bw_write_bit(bw, (code >> i) & 1);
+        if (!bw_write_bit(bw, (code >> i) & 1)) return 0;
     }
+
+    return 1;
 }
 
-void bw_flush(BitWriter* bw) {
+int bw_flush(BitWriter* bw) {
+    if (!bw) return 0;
+
     if (bw->bit_count > 0) {
         bw->buffer <<= (8 - bw->bit_count);
-        fwrite(&bw->buffer, 1, 1, bw->file);
+        if (fwrite(&bw->buffer, 1, 1, bw->file) != 1) return 0;
+        bw->buffer = 0;
+        bw->bit_count = 0;
     }
+
+    return 1;
 }
 
 void bw_free(BitWriter* bw) { free(bw); }
