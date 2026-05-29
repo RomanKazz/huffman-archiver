@@ -64,13 +64,22 @@ static HuffmanNode* dequeue(PriorityQueue* pq) {
     return node;
 }
 
+static void free_queue(PriorityQueue* pq) {
+    while (pq->size > 0) {
+        free_huffman_tree(dequeue(pq));
+    }
+}
+
 HuffmanNode* build_huffman_tree(const uint64_t freq[256]) {
     PriorityQueue pq = {0};
 
     for (int i = 0; i < 256; i++) {
         if (freq[i] > 0) {
             HuffmanNode* node = create_node((unsigned char)i, freq[i]);
-            if (!node) return NULL;
+            if (!node) {
+                free_queue(&pq);
+                return NULL;
+            }
 
             enqueue(&pq, node);
         }
@@ -80,8 +89,20 @@ HuffmanNode* build_huffman_tree(const uint64_t freq[256]) {
         HuffmanNode* left = dequeue(&pq);
         HuffmanNode* right = dequeue(&pq);
 
+        if (UINT64_MAX - left->freq < right->freq) {
+            free_huffman_tree(left);
+            free_huffman_tree(right);
+            free_queue(&pq);
+            return NULL;
+        }
+
         HuffmanNode* internal = create_node('\0', left->freq + right->freq);
-        if (!internal) return NULL;
+        if (!internal) {
+            free_huffman_tree(left);
+            free_huffman_tree(right);
+            free_queue(&pq);
+            return NULL;
+        }
         internal->left = left;
         internal->right = right;
 

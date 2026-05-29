@@ -4,6 +4,11 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DATA_DIR="$SCRIPT_DIR/data"
+BINARY_SOURCE="${BINARY_SOURCE:-/bin/ls}"
+
+if [ ! -f "$BINARY_SOURCE" ]; then
+    BINARY_SOURCE="/usr/bin/ls"
+fi
 
 echo "Preparing directories..."
 
@@ -53,8 +58,17 @@ for entry in "${sizes[@]}"
 do
     name=${entry%%:*}
     bytes=${entry##*:}
+    output="$DATA_DIR/binary/bin_$name.bin"
 
-    head -c "$bytes" /bin/ls > "$DATA_DIR/binary/bin_$name.bin"
+    : > "$output"
+    while [ "$(wc -c < "$output" | tr -d ' ')" -lt "$bytes" ]
+    do
+        cat "$BINARY_SOURCE" >> "$output"
+    done
+
+    tmp="$output.tmp"
+    head -c "$bytes" "$output" > "$tmp"
+    mv "$tmp" "$output"
 done
 
 echo "Done."
