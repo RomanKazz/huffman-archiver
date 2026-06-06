@@ -29,3 +29,33 @@ jobs:
 
       - name: Format check
         run: clang-format --dry-run --Werror $(git ls-files '*.c' '*.h')
+
+  valgrind:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+
+      - name: Configure
+        run: cmake -S . -B build-valgrind -DENABLE_SANITIZERS=OFF -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build
+        run: cmake --build build-valgrind
+
+      - name: Unit tests under Valgrind
+        run: |
+          for test_bin in build-valgrind/test_*; do
+            [ -x "$test_bin" ] || continue
+            valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 "$test_bin"
+          done
+
+      - name: Integration tests under Valgrind
+        run: |
+          BUILD_DIR=build-valgrind \
+          CMAKE_CONFIGURE_ARGS="-DENABLE_SANITIZERS=OFF -DCMAKE_BUILD_TYPE=Debug" \
+          ARCHIVER_PREFIX="valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1" \
+          bash tests/test.sh

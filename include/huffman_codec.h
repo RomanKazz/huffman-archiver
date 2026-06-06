@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 RomanKazz
+
 #ifndef HUFFMAN_CODEC_H
 #define HUFFMAN_CODEC_H
 

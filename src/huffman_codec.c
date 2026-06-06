@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 RomanKazz
+
 #define _POSIX_C_SOURCE 200809L
 
 #include "huffman_codec.h"
