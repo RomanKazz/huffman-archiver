@@ -11,6 +11,7 @@ tests/tmp/*
 TODO.md
 build/
 build-tests/
+build-valgrind/
 tests/benchmark.sh
 experiments/data/
 experiments/plots/

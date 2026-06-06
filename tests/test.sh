@@ -3,6 +3,7 @@ set -e
 
 BUILD_DIR="${BUILD_DIR:-build-tests}"
 ARCHIVER="$BUILD_DIR/huff"
+ARCHIVER_PREFIX="${ARCHIVER_PREFIX:-}"
 TMP_DIR=tests/tmp
 TMP_ARCHIVE="$TMP_DIR/tmp.huff"
 TMP_OUTPUT="$TMP_DIR/tmp.out"
@@ -18,8 +19,8 @@ run_test() {
     input=$1
     echo "Test: $input"
 
-    $ARCHIVER c "$input" "$TMP_ARCHIVE"
-    $ARCHIVER d "$TMP_ARCHIVE" "$TMP_OUTPUT"
+    $ARCHIVER_PREFIX "$ARCHIVER" c "$input" "$TMP_ARCHIVE"
+    $ARCHIVER_PREFIX "$ARCHIVER" d "$TMP_ARCHIVE" "$TMP_OUTPUT"
 
     if diff "$input" "$TMP_OUTPUT" > /dev/null; then
         echo -e "${GREEN}PASS${RESET}"
@@ -37,7 +38,7 @@ echo
 
 mkdir -p "$TMP_DIR"
 
-cmake -S . -B "$BUILD_DIR"
+cmake -S . -B "$BUILD_DIR" ${CMAKE_CONFIGURE_ARGS:-}
 cmake --build "$BUILD_DIR"
 
 for file in tests/data/*.txt tests/data/*.bin; do

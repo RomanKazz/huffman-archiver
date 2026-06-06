@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -O2 -fsanitize=address -Iinclude
+CFLAGS = -Wall -Wextra -O2 -fsanitize=address,undefined -fno-omit-frame-pointer -Iinclude
 
 BUILD = build
 SRC_DIR = src

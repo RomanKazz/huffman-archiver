@@ -8,7 +8,18 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
-option(ENABLE_SANITIZERS "Build with AddressSanitizer" ON)
+option(ENABLE_SANITIZERS "Build with AddressSanitizer and UndefinedBehaviorSanitizer" ON)
+
+function(enable_project_warnings target)
+    target_compile_options(${target} PRIVATE -Wall -Wextra -O2)
+endfunction()
+
+function(enable_project_sanitizers target)
+    if (ENABLE_SANITIZERS AND CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+        target_compile_options(${target} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+        target_link_options(${target} PRIVATE -fsanitize=address,undefined)
+    endif()
+endfunction()
 
 add_library(huffman
     src/huffman_tree.c
@@ -17,20 +28,13 @@ add_library(huffman
 )
 
 target_include_directories(huffman PUBLIC include)
-target_compile_options(huffman PRIVATE -Wall -Wextra -O2)
-
-if (ENABLE_SANITIZERS AND CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
-    target_compile_options(huffman PRIVATE -fsanitize=address)
-    target_link_options(huffman PRIVATE -fsanitize=address)
-endif()
+enable_project_warnings(huffman)
+enable_project_sanitizers(huffman)
 
 add_executable(huff src/main.c)
 target_link_libraries(huff PRIVATE huffman)
-
-if (ENABLE_SANITIZERS AND CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
-    target_compile_options(huff PRIVATE -fsanitize=address)
-    target_link_options(huff PRIVATE -fsanitize=address)
-endif()
+enable_project_warnings(huff)
+enable_project_sanitizers(huff)
 
 file(GLOB TEST_SRC CONFIGURE_DEPENDS tests/unit/test_*.c)
 
@@ -40,11 +44,8 @@ foreach(test_file ${TEST_SRC})
 
     add_executable(${test_name} ${test_file})
     target_link_libraries(${test_name} PRIVATE huffman)
-
-    if (ENABLE_SANITIZERS AND CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
-        target_compile_options(${test_name} PRIVATE -fsanitize=address)
-        target_link_options(${test_name} PRIVATE -fsanitize=address)
-    endif()
+    enable_project_warnings(${test_name})
+    enable_project_sanitizers(${test_name})
 
     add_test(
         NAME ${test_name}
