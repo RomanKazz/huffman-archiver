@@ -13,49 +13,49 @@ typedef struct BitWriter BitWriter;
 typedef struct BitReader BitReader;
 
 /**
- * Создаёт writer
+ * Создаёт writer.
  */
-BitWriter* bw_create(FILE* file);
+BitWriter* bit_writer_create(FILE* file);
 
 /**
  * Записывает один бит
  *
  * @return 1 при успехе, 0 при ошибке записи
  */
-int bw_write_bit(BitWriter* bw, int bit);
+int bit_writer_write_bit(BitWriter* writer, int bit);
 
 /**
  * Записывает несколько бит
  *
  * @return 1 при успехе, 0 при ошибке записи
  */
-int bw_write_bits(BitWriter* bw, unsigned int code, int length);
+int bit_writer_write_bits(BitWriter* writer, unsigned int code, int length);
 
 /**
  * Сбрасывает буфер
  *
  * @return 1 при успехе, 0 при ошибке записи
  */
-int bw_flush(BitWriter* bw);
+int bit_writer_flush(BitWriter* writer);
 
 /**
  * Освобождает writer
  */
-void bw_free(BitWriter* bw);
+void bit_writer_free(BitWriter* writer);
 
 /**
- * Создаёт reader
+ * Создаёт reader.
  */
-BitReader* br_create(FILE* file);
+BitReader* bit_reader_create(FILE* file);
 
 /**
  * Читает один бит
  */
-int br_read_bit(BitReader* br);
+int bit_reader_read_bit(BitReader* reader);
 
 /**
  * Освобождает reader
  */
-void br_free(BitReader* br);
+void bit_reader_free(BitReader* reader);
 
 #endif

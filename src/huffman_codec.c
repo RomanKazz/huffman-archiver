@@ -105,7 +105,7 @@ static void generate_codes(HuffmanNode* root, HuffCode table[MAX_SYMBOLS],
 
 static int write_code(BitWriter* writer, const HuffCode* code) {
     for (int i = 0; i < code->length; i++) {
-        if (!bw_write_bit(writer, code->bits[i])) {
+        if (!bit_writer_write_bit(writer, code->bits[i])) {
             return 0;
         }
     }
@@ -158,7 +158,7 @@ int read_header(FILE* in, uint64_t freq[MAX_SYMBOLS], uint64_t* original_size) {
 }
 
 int compress_file(const char* input, const char* output) {
-    int status = 1;
+    int success = 0;
     uint64_t original_size = 0;
     uint64_t freq[MAX_SYMBOLS] = {0};
     HuffCode code_table[MAX_SYMBOLS] = {0};
@@ -171,72 +171,76 @@ int compress_file(const char* input, const char* output) {
 
     if (!in) {
         perror("file");
-        return 1;
+        return 0;
     }
 
     out = fopen(output, "wb");
     if (!out) {
         perror("file");
         fclose(in);
-        return 1;
+        return 0;
     }
 
-    if (!count_freq_file(in, freq) || !get_file_size(in, &original_size)) {
-        goto cleanup;
-    }
-
-    if (!write_header(out, freq, original_size)) {
-        goto cleanup;
-    }
-
-    if (original_size == 0) {
-        status = 0;
-        goto cleanup;
-    }
-
-    root = build_huffman_tree(freq);
-    if (!root) {
-        goto cleanup;
-    }
-
-    generate_codes(root, code_table, path, 0);
-
-    writer = bw_create(out);
-    if (!writer) {
-        goto cleanup;
-    }
-
-    while (fread(&byte, 1, 1, in) == 1) {
-        if (!write_code(writer, &code_table[byte])) {
-            goto cleanup;
+    do {
+        if (!count_freq_file(in, freq) || !get_file_size(in, &original_size)) {
+            break;
         }
-    }
 
-    if (ferror(in)) {
-        goto cleanup;
-    }
+        if (!write_header(out, freq, original_size)) {
+            break;
+        }
 
-    if (!bw_flush(writer)) {
-        goto cleanup;
-    }
-    status = 0;
+        if (original_size == 0) {
+            success = 1;
+            break;
+        }
 
-cleanup:
+        root = build_huffman_tree(freq);
+        if (!root) {
+            break;
+        }
+
+        generate_codes(root, code_table, path, 0);
+
+        writer = bit_writer_create(out);
+        if (!writer) {
+            break;
+        }
+
+        int stream_ok = 1;
+        while (fread(&byte, 1, 1, in) == 1) {
+            if (!write_code(writer, &code_table[byte])) {
+                stream_ok = 0;
+                break;
+            }
+        }
+
+        if (!stream_ok || ferror(in)) {
+            break;
+        }
+
+        if (!bit_writer_flush(writer)) {
+            break;
+        }
+
+        success = 1;
+    } while (0);
+
     free_huffman_tree(root);
-    bw_free(writer);
+    bit_writer_free(writer);
 
     if (fclose(in) != 0) {
-        status = 1;
+        success = 0;
     }
     if (fclose(out) != 0) {
-        status = 1;
+        success = 0;
     }
 
-    return status;
+    return success;
 }
 
 int decompress_file(const char* input, const char* output) {
-    int status = 1;
+    int success = 0;
     uint64_t freq[MAX_SYMBOLS] = {0};
     uint64_t original_size = 0;
     FILE* in = fopen(input, "rb");
@@ -246,65 +250,74 @@ int decompress_file(const char* input, const char* output) {
 
     if (!in) {
         perror("file");
-        return 1;
+        return 0;
     }
 
     out = fopen(output, "wb");
     if (!out) {
         perror("file");
         fclose(in);
-        return 1;
+        return 0;
     }
 
-    if (!read_header(in, freq, &original_size)) {
-        printf("Failed to decompress file\n");
-        goto cleanup;
-    }
+    do {
+        if (!read_header(in, freq, &original_size)) {
+            printf("Failed to decompress file\n");
+            break;
+        }
 
-    if (original_size == 0) {
-        status = 0;
-        goto cleanup;
-    }
+        if (original_size == 0) {
+            success = 1;
+            break;
+        }
 
-    root = build_huffman_tree(freq);
-    if (!root) {
-        goto cleanup;
-    }
+        root = build_huffman_tree(freq);
+        if (!root) {
+            break;
+        }
 
-    reader = br_create(in);
-    if (!reader) {
-        goto cleanup;
-    }
+        reader = bit_reader_create(in);
+        if (!reader) {
+            break;
+        }
 
-    for (uint64_t i = 0; i < original_size; i++) {
-        HuffmanNode* node = root;
+        int decode_ok = 1;
+        for (uint64_t i = 0; i < original_size; i++) {
+            HuffmanNode* node = root;
 
-        while (node->left || node->right) {
-            int bit = br_read_bit(reader);
-            if (bit == -1) {
-                goto cleanup;
+            while (node->left || node->right) {
+                int bit = bit_reader_read_bit(reader);
+                if (bit == -1) {
+                    decode_ok = 0;
+                    break;
+                }
+
+                node = bit ? node->right : node->left;
             }
 
-            node = bit ? node->right : node->left;
+            if (node->left || node->right) {
+                decode_ok = 0;
+                break;
+            }
+
+            if (fputc(node->ch, out) == EOF) {
+                decode_ok = 0;
+                break;
+            }
         }
 
-        if (fputc(node->ch, out) == EOF) {
-            goto cleanup;
-        }
-    }
+        success = decode_ok && !ferror(out);
+    } while (0);
 
-    status = 0;
-
-cleanup:
     free_huffman_tree(root);
-    br_free(reader);
+    bit_reader_free(reader);
 
     if (fclose(in) != 0) {
-        status = 1;
+        success = 0;
     }
     if (fclose(out) != 0) {
-        status = 1;
+        success = 0;
     }
 
-    return status;
+    return success;
 }

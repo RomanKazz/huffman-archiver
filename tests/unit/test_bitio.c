@@ -13,24 +13,24 @@ TEST(write_read_bits) {
     FILE* f = fopen(tmp, "wb");
     EXPECT_TRUE(f != NULL);
 
-    BitWriter* bw = bw_create(f);
-    EXPECT_TRUE(bw != NULL);
+    BitWriter* writer = bit_writer_create(f);
+    EXPECT_TRUE(writer != NULL);
 
-    for (int i = 0; i < 100; i++) bw_write_bit(bw, i % 2);
+    for (int i = 0; i < 100; i++) bit_writer_write_bit(writer, i % 2);
 
-    bw_flush(bw);
-    bw_free(bw);
+    bit_writer_flush(writer);
+    bit_writer_free(writer);
     fclose(f);
 
     f = fopen(TO_TEST("tmp.bin"), "rb");
     EXPECT_TRUE(f != NULL);
 
-    BitReader* br = br_create(f);
-    EXPECT_TRUE(br != NULL);
+    BitReader* reader = bit_reader_create(f);
+    EXPECT_TRUE(reader != NULL);
 
-    for (int i = 0; i < 100; i++) EXPECT_EQ(br_read_bit(br), i % 2);
+    for (int i = 0; i < 100; i++) EXPECT_EQ(bit_reader_read_bit(reader), i % 2);
 
-    br_free(br);
+    bit_reader_free(reader);
 
     fclose(f);
     remove(tmp);

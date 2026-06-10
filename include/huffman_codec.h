@@ -40,7 +40,7 @@ int read_header(FILE* in, uint64_t freq[256], uint64_t* original_size);
  *
  * @param input путь к входному файлу
  * @param output путь к архиву
- * @return 0 при успехе, 1 при ошибке
+ * @return 1 при успехе, 0 при ошибке
  */
 int compress_file(const char* input, const char* output);
 
@@ -49,7 +49,7 @@ int compress_file(const char* input, const char* output);
  *
  * @param input путь к архиву
  * @param output путь к выходному файлу
- * @return 0 при успехе, 1 при ошибке
+ * @return 1 при успехе, 0 при ошибке
  */
 int decompress_file(const char* input, const char* output);
 

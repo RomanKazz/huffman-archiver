@@ -23,8 +23,8 @@ TEST(random_archive) {
 
     fclose(f);
 
-    compress_file(in, arc);
-    decompress_file(arc, out);
+    EXPECT_EQ(compress_file(in, arc), 1);
+    EXPECT_EQ(decompress_file(arc, out), 1);
 
     EXPECT_TRUE(files_equal(in, out));
 

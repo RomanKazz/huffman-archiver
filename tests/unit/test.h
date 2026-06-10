@@ -92,8 +92,8 @@ static inline int files_equal(const char* a, const char* b) {
         fprintf(f, "%s", text);                    \
         fclose(f);                                 \
                                                    \
-        compress_file(in, arc);                    \
-        decompress_file(arc, out);                 \
+        EXPECT_EQ(compress_file(in, arc), 1);      \
+        EXPECT_EQ(decompress_file(arc, out), 1);   \
                                                    \
         EXPECT_TRUE(files_equal(in, out));         \
                                                    \
