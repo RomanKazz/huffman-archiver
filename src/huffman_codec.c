@@ -47,6 +47,18 @@ static int read_u64_le(FILE* in, uint64_t* value) {
 }
 
 static int get_file_size(FILE* file, uint64_t* size) {
+#if defined(_WIN32)
+    __int64 end_offset;
+
+    if (_fseeki64(file, 0, SEEK_END) != 0) {
+        return 0;
+    }
+
+    end_offset = _ftelli64(file);
+    if (end_offset < 0) {
+        return 0;
+    }
+#else
     off_t end_offset;
 
     if (fseeko(file, 0, SEEK_END) != 0) {
@@ -57,6 +69,7 @@ static int get_file_size(FILE* file, uint64_t* size) {
     if (end_offset < 0) {
         return 0;
     }
+#endif
 
     *size = (uint64_t)end_offset;
     rewind(file);

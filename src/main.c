@@ -20,6 +20,4 @@ int main(int argc, char* argv[]) {
         printf("Unknown mode\n");
         return 1;
     }
-
-    return 0;
 }

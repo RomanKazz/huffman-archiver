@@ -17,7 +17,7 @@ TEST(random_archive) {
     FILE* f = fopen(in, "wb");
     EXPECT_TRUE(f != NULL);
 
-    srand(time(0));
+    srand((unsigned int)time(NULL));
 
     for (int i = 0; i < 10000; i++) fputc(rand() % 256, f);
 

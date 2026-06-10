@@ -8,8 +8,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _WIN32
+#include <direct.h>
+#else
 #include <sys/stat.h>
 #include <sys/types.h>
+#endif
 
 #include "huffman_codec.h"
 
@@ -21,7 +25,11 @@ static int tests_run = 0;
 static int tests_failed = 0;
 
 static inline int ensure_dir(const char* path) {
+#ifdef _WIN32
+    if (_mkdir(path) == 0 || errno == EEXIST) {
+#else
     if (mkdir(path, 0755) == 0 || errno == EEXIST) {
+#endif
         return 1;
     }
 

@@ -13,6 +13,7 @@ option(ENABLE_SANITIZERS "Build with AddressSanitizer and UndefinedBehaviorSanit
 function(enable_project_warnings target)
     if (MSVC)
         target_compile_options(${target} PRIVATE /W4)
+        target_compile_definitions(${target} PRIVATE _CRT_SECURE_NO_WARNINGS)
     else()
         target_compile_options(${target} PRIVATE -Wall -Wextra -O2)
     endif()
