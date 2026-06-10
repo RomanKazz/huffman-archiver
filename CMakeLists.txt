@@ -11,7 +11,11 @@ set(CMAKE_C_EXTENSIONS OFF)
 option(ENABLE_SANITIZERS "Build with AddressSanitizer and UndefinedBehaviorSanitizer" ON)
 
 function(enable_project_warnings target)
-    target_compile_options(${target} PRIVATE -Wall -Wextra -O2)
+    if (MSVC)
+        target_compile_options(${target} PRIVATE /W4)
+    else()
+        target_compile_options(${target} PRIVATE -Wall -Wextra -O2)
+    endif()
 endfunction()
 
 function(enable_project_sanitizers target)

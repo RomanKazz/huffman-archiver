@@ -3,6 +3,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 DATA_DIR="$SCRIPT_DIR/data"
 BINARY_SOURCE="${BINARY_SOURCE:-/bin/ls}"
 
@@ -17,6 +18,7 @@ mkdir -p "$DATA_DIR/text"
 mkdir -p "$DATA_DIR/random"
 mkdir -p "$DATA_DIR/repeat"
 mkdir -p "$DATA_DIR/binary"
+mkdir -p "$DATA_DIR/real"
 
 base="Lorem ipsum dolor sit amet consectetur adipiscing elit."
 
@@ -70,5 +72,17 @@ do
     head -c "$bytes" "$output" > "$tmp"
     mv "$tmp" "$output"
 done
+
+echo "Preparing real-world sample files..."
+
+cat "$ROOT_DIR"/src/*.c "$ROOT_DIR"/include/*.h > "$DATA_DIR/real/source_bundle.c"
+
+if [ -f "$ROOT_DIR/report/vkr/vkr.pdf" ]; then
+    cp "$ROOT_DIR/report/vkr/vkr.pdf" "$DATA_DIR/real/report.pdf"
+fi
+
+if [ -f "$BINARY_SOURCE" ]; then
+    cp "$BINARY_SOURCE" "$DATA_DIR/real/system_binary"
+fi
 
 echo "Done."
