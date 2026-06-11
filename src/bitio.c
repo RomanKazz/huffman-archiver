@@ -17,80 +17,80 @@ struct BitReader {
     int bit_count;
 };
 
-BitWriter* bw_create(FILE* file) {
+BitWriter* bit_writer_create(FILE* file) {
     if (!file) return NULL;
 
-    BitWriter* bw = malloc(sizeof(BitWriter));
-    if (!bw) return NULL;
+    BitWriter* writer = malloc(sizeof(BitWriter));
+    if (!writer) return NULL;
 
-    bw->file = file;
-    bw->buffer = 0;
-    bw->bit_count = 0;
-    return bw;
+    writer->file = file;
+    writer->buffer = 0;
+    writer->bit_count = 0;
+    return writer;
 }
 
-int bw_write_bit(BitWriter* bw, int bit) {
-    if (!bw) return 0;
+int bit_writer_write_bit(BitWriter* writer, int bit) {
+    if (!writer) return 0;
 
-    bw->buffer <<= 1;
-    bw->buffer |= bit;
-    bw->bit_count++;
+    writer->buffer <<= 1;
+    writer->buffer |= bit;
+    writer->bit_count++;
 
-    if (bw->bit_count == 8) {
-        if (fwrite(&bw->buffer, 1, 1, bw->file) != 1) return 0;
-        bw->buffer = 0;
-        bw->bit_count = 0;
+    if (writer->bit_count == 8) {
+        if (fwrite(&writer->buffer, 1, 1, writer->file) != 1) return 0;
+        writer->buffer = 0;
+        writer->bit_count = 0;
     }
 
     return 1;
 }
 
-int bw_write_bits(BitWriter* bw, unsigned int code, int length) {
+int bit_writer_write_bits(BitWriter* writer, unsigned int code, int length) {
     for (int i = length - 1; i >= 0; i--) {
-        if (!bw_write_bit(bw, (code >> i) & 1)) return 0;
+        if (!bit_writer_write_bit(writer, (code >> i) & 1)) return 0;
     }
 
     return 1;
 }
 
-int bw_flush(BitWriter* bw) {
-    if (!bw) return 0;
+int bit_writer_flush(BitWriter* writer) {
+    if (!writer) return 0;
 
-    if (bw->bit_count > 0) {
-        bw->buffer <<= (8 - bw->bit_count);
-        if (fwrite(&bw->buffer, 1, 1, bw->file) != 1) return 0;
-        bw->buffer = 0;
-        bw->bit_count = 0;
+    if (writer->bit_count > 0) {
+        writer->buffer <<= (8 - writer->bit_count);
+        if (fwrite(&writer->buffer, 1, 1, writer->file) != 1) return 0;
+        writer->buffer = 0;
+        writer->bit_count = 0;
     }
 
     return 1;
 }
 
-void bw_free(BitWriter* bw) { free(bw); }
+void bit_writer_free(BitWriter* writer) { free(writer); }
 
-BitReader* br_create(FILE* file) {
+BitReader* bit_reader_create(FILE* file) {
     if (!file) return NULL;
 
-    BitReader* br = malloc(sizeof(BitReader));
-    if (!br) return NULL;
+    BitReader* reader = malloc(sizeof(BitReader));
+    if (!reader) return NULL;
 
-    br->file = file;
-    br->buffer = 0;
-    br->bit_count = 0;
-    return br;
+    reader->file = file;
+    reader->buffer = 0;
+    reader->bit_count = 0;
+    return reader;
 }
 
-int br_read_bit(BitReader* br) {
-    if (br->bit_count == 0) {
-        if (fread(&br->buffer, 1, 1, br->file) != 1) return -1;
-        br->bit_count = 8;
+int bit_reader_read_bit(BitReader* reader) {
+    if (reader->bit_count == 0) {
+        if (fread(&reader->buffer, 1, 1, reader->file) != 1) return -1;
+        reader->bit_count = 8;
     }
 
-    int bit = (br->buffer >> 7) & 1;
-    br->buffer <<= 1;
-    br->bit_count--;
+    int bit = (reader->buffer >> 7) & 1;
+    reader->buffer <<= 1;
+    reader->bit_count--;
 
     return bit;
 }
 
-void br_free(BitReader* br) { free(br); }
+void bit_reader_free(BitReader* reader) { free(reader); }

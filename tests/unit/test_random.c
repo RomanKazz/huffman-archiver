@@ -17,14 +17,14 @@ TEST(random_archive) {
     FILE* f = fopen(in, "wb");
     EXPECT_TRUE(f != NULL);
 
-    srand(time(0));
+    srand((unsigned int)time(NULL));
 
     for (int i = 0; i < 10000; i++) fputc(rand() % 256, f);
 
     fclose(f);
 
-    compress_file(in, arc);
-    decompress_file(arc, out);
+    EXPECT_EQ(compress_file(in, arc), 1);
+    EXPECT_EQ(decompress_file(arc, out), 1);
 
     EXPECT_TRUE(files_equal(in, out));
 

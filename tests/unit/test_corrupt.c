@@ -17,7 +17,7 @@ TEST(corrupted_archive) {
 
     fclose(f);
 
-    decompress_file(file, TO_TEST("out.txt"));
+    EXPECT_EQ(decompress_file(file, TO_TEST("out.txt")), 0);
     remove(TO_TEST("out.txt"));
 }
 

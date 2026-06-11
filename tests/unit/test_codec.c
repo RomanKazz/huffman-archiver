@@ -27,8 +27,8 @@ TEST(codec_empty_file) {
     EXPECT_TRUE(file != NULL);
     fclose(file);
 
-    EXPECT_EQ(compress_file(in, arc), 0);
-    EXPECT_EQ(decompress_file(arc, out), 0);
+    EXPECT_EQ(compress_file(in, arc), 1);
+    EXPECT_EQ(decompress_file(arc, out), 1);
     EXPECT_TRUE(files_equal(in, out));
 
     remove(in);
@@ -58,8 +58,8 @@ TEST(codec_long_codes) {
     }
     fclose(file);
 
-    EXPECT_EQ(compress_file(in, arc), 0);
-    EXPECT_EQ(decompress_file(arc, out), 0);
+    EXPECT_EQ(compress_file(in, arc), 1);
+    EXPECT_EQ(decompress_file(arc, out), 1);
     EXPECT_TRUE(files_equal(in, out));
 
     remove(in);

@@ -8,8 +8,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _WIN32
+#include <direct.h>
+#else
 #include <sys/stat.h>
 #include <sys/types.h>
+#endif
 
 #include "huffman_codec.h"
 
@@ -21,7 +25,11 @@ static int tests_run = 0;
 static int tests_failed = 0;
 
 static inline int ensure_dir(const char* path) {
+#ifdef _WIN32
+    if (_mkdir(path) == 0 || errno == EEXIST) {
+#else
     if (mkdir(path, 0755) == 0 || errno == EEXIST) {
+#endif
         return 1;
     }
 
@@ -92,8 +100,8 @@ static inline int files_equal(const char* a, const char* b) {
         fprintf(f, "%s", text);                    \
         fclose(f);                                 \
                                                    \
-        compress_file(in, arc);                    \
-        decompress_file(arc, out);                 \
+        EXPECT_EQ(compress_file(in, arc), 1);      \
+        EXPECT_EQ(decompress_file(arc, out), 1);   \
                                                    \
         EXPECT_TRUE(files_equal(in, out));         \
                                                    \
